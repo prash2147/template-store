@@ -1,14 +1,42 @@
 "use client";
 
-import { useState } from "react";
+import { useSession } from "next-auth/react";
+import { useState, useEffect } from "react";
 
 export default function AdminPage() {
+
+  const { data: session, status } = useSession();
 
   const [title, setTitle] = useState("");
   const [price, setPrice] = useState("");
   const [video, setVideo] = useState("");
   const [description, setDescription] = useState("");
 
+  const [categories, setCategories] = useState<any[]>([]);
+  const [category, setCategory] = useState("");
+  const [newCategory, setNewCategory] = useState("");
+
+  // load categories
+  const loadCategories = async () => {
+    const res = await fetch("/api/categories");
+    const data = await res.json();
+    setCategories(data);
+  };
+
+  useEffect(() => {
+    loadCategories();
+  }, []);
+
+  // protect admin page
+  if (status === "loading") {
+    return <div className="p-10">Loading...</div>;
+  }
+
+  if (!session) {
+    return <div className="p-10">Please login first</div>;
+  }
+
+  // upload template
   const uploadTemplate = async () => {
 
     const res = await fetch("/api/templates", {
@@ -20,11 +48,12 @@ export default function AdminPage() {
         title,
         price: Number(price),
         video,
-        description
+        description,
+        category
       })
     });
 
-    const data = await res.json();
+    await res.json();
 
     alert("Template Uploaded!");
 
@@ -32,6 +61,24 @@ export default function AdminPage() {
     setPrice("");
     setVideo("");
     setDescription("");
+    setCategory("");
+  };
+
+  // create new category
+  const createCategory = async () => {
+
+    if (!newCategory) return;
+
+    await fetch("/api/categories", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ name: newCategory })
+    });
+
+    setNewCategory("");
+    loadCategories();
   };
 
   return (
@@ -41,6 +88,7 @@ export default function AdminPage() {
         Upload Template
       </h1>
 
+      {/* TITLE */}
       <input
         className="border p-2 w-full mb-4"
         placeholder="Template Title"
@@ -48,6 +96,7 @@ export default function AdminPage() {
         onChange={(e) => setTitle(e.target.value)}
       />
 
+      {/* PRICE */}
       <input
         className="border p-2 w-full mb-4"
         placeholder="Price"
@@ -55,13 +104,76 @@ export default function AdminPage() {
         onChange={(e) => setPrice(e.target.value)}
       />
 
-      <input
+      {/* CATEGORY DROPDOWN */}
+      <select
         className="border p-2 w-full mb-4"
-        placeholder="Video URL"
-        value={video}
-        onChange={(e) => setVideo(e.target.value)}
+        value={category}
+        onChange={(e) => setCategory(e.target.value)}
+      >
+
+        <option value="">Select Category</option>
+
+        {categories.map((c) => (
+          <option key={c._id} value={c.name}>
+            {c.name}
+          </option>
+        ))}
+
+      </select>
+
+      {/* ADD CATEGORY */}
+      <div className="flex gap-2 mb-4">
+
+        <input
+          className="border p-2 w-full"
+          placeholder="New Category"
+          value={newCategory}
+          onChange={(e) => setNewCategory(e.target.value)}
+        />
+
+        <button
+          onClick={createCategory}
+          className="bg-blue-600 text-white px-4 rounded"
+        >
+          Add
+        </button>
+
+      </div>
+
+      {/* VIDEO FILE UPLOAD */}
+      <input
+        type="file"
+        className="mb-4"
+        onChange={async (e: any) => {
+
+          const file = e.target.files[0];
+
+          const reader = new FileReader();
+
+          reader.onloadend = async () => {
+
+            const res = await fetch("/api/upload", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                video: reader.result
+              })
+            });
+
+            const data = await res.json();
+
+            setVideo(data.url);
+
+          };
+
+          reader.readAsDataURL(file);
+
+        }}
       />
 
+      {/* DESCRIPTION */}
       <textarea
         className="border p-2 w-full mb-4"
         placeholder="Description"
@@ -69,6 +181,7 @@ export default function AdminPage() {
         onChange={(e) => setDescription(e.target.value)}
       />
 
+      {/* UPLOAD BUTTON */}
       <button
         onClick={uploadTemplate}
         className="bg-green-600 text-white px-6 py-2 rounded"

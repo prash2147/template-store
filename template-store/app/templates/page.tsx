@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
-export default function Home() {
+export default function TemplatesPage() {
 
   const [templates, setTemplates] = useState<any[]>([]);
 
@@ -22,21 +23,45 @@ export default function Home() {
       <div className="grid grid-cols-3 gap-6">
 
         {templates.map((template) => (
-          <div key={template._id} className="border p-4 rounded">
 
-            <video controls width="250">
+          <div
+            key={template._id}
+            className="bg-white shadow-lg rounded-xl overflow-hidden hover:scale-105 transition"
+          >
+
+            <video controls className="w-full h-48 object-cover">
               <source src={template.video} type="video/mp4" />
             </video>
 
-            <h2 className="text-xl mt-2">
-              {template.title}
-            </h2>
+            <div className="p-4">
 
-            <p className="text-green-600 font-bold">
-              ₹{template.price}
-            </p>
+              <h2 className="text-lg font-semibold">
+                {template.title}
+              </h2>
+
+              <p className="text-green-600 font-bold mt-2">
+                ₹{template.price}
+              </p>
+
+              <div className="flex gap-2 mt-3">
+
+                <Link
+                  href={`/template/${template._id}`}
+                  className="bg-blue-600 text-white px-3 py-1 rounded"
+                >
+                  Preview
+                </Link>
+
+                <button className="bg-green-600 text-white px-3 py-1 rounded">
+                  Buy
+                </button>
+
+              </div>
+
+            </div>
 
           </div>
+
         ))}
 
       </div>
