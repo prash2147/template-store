@@ -1,10 +1,12 @@
-import { Schema, model, models } from "mongoose";
+import mongoose from "mongoose";
 
-const TemplateSchema = new Schema({
+const TemplateSchema = new mongoose.Schema({
   title: String,
   price: Number,
   video: String,
-  description: String
+  description: String,
+  category: String
 });
 
-export default models.Template || model("Template", TemplateSchema);
+export default mongoose.models.Template ||
+  mongoose.model("Template", TemplateSchema);
