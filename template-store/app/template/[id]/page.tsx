@@ -1,27 +1,60 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 
-export default function TemplatePage({ params }: any) {
+export default function TemplatePage({ params }: { params: Promise<{ id: string }> }) {
+
+  const { id } = use(params);
 
   const [template, setTemplate] = useState<any>(null);
 
   useEffect(() => {
 
-    fetch(`/api/templates`)
+    fetch("/api/templates")
       .then(res => res.json())
       .then(data => {
 
-        const found = data.find((t: any) => t._id === params.id);
+        const found = data.find((t: any) => t._id === id);
         setTemplate(found);
 
       });
 
-  }, [params.id]);
+  }, [id]);
 
   if (!template) {
     return <div className="p-10">Loading...</div>;
   }
+  
+  const buyTemplate = async () => {
+
+    const res = await fetch("/api/create-order", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        amount: template.price
+      })
+    });
+
+    const order = await res.json();
+
+    const options = {
+      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+      amount: order.amount,
+      currency: "INR",
+      name: "VN Templates",
+      description: template.title,
+      order_id: order.id,
+
+      handler: function () {
+        alert("Payment Successful!");
+      }
+    };
+
+    const rzp = new (window as any).Razorpay(options);
+    rzp.open();
+  };
 
   return (
     <main className="p-10 max-w-4xl mx-auto">
@@ -43,6 +76,7 @@ export default function TemplatePage({ params }: any) {
       </p>
 
       <button
+        onClick={buyTemplate}
         className="bg-green-600 text-white px-6 py-3 rounded-lg"
       >
         Buy Template
