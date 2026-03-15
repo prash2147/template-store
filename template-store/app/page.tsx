@@ -3,75 +3,117 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-export default function Home() {
+export default function TemplatesPage() {
 
   const [templates, setTemplates] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState("All");
 
   useEffect(() => {
+
     fetch("/api/templates")
-      .then((res) => res.json())
-      .then((data) => setTemplates(data));
+      .then(res => res.json())
+      .then(data => setTemplates(data));
+
+    fetch("/api/categories")
+      .then(res => res.json())
+      .then(data => setCategories(data));
+
   }, []);
 
+  const filteredTemplates =
+    selectedCategory === "All"
+      ? templates
+      : templates.filter((t) => t.category === selectedCategory);
+
   return (
-    <main>
+    <main className="p-10">
 
-      {/* HERO SECTION */}
+      <h1 className="text-4xl font-bold text-white mb-8">
+        Trending VN Templates
+      </h1>
 
-      <section className="bg-black text-white py-20 text-center">
+      {/* CATEGORY FILTER */}
+      <div className="flex gap-3 mb-8 flex-wrap items-center">
 
-        <h1 className="text-5xl font-bold">
-          Create Amazing VN Templates
-        </h1>
-
-        <p className="mt-4 text-lg text-gray-300">
-          Download trending video templates instantly
-        </p>
-
-        <Link
-          href="/templates"
-          className="mt-6 inline-block bg-green-600 px-6 py-3 rounded text-lg"
+        <button
+          onClick={() => setSelectedCategory("All")}
+          className={`px-4 py-2 rounded ${
+            selectedCategory === "All"
+              ? "bg-purple-600 text-white"
+              : "bg-gray-800 text-gray-300"
+          }`}
         >
-          Browse Templates
-        </Link>
+        All
+        </button>
 
-      </section>
+        {categories.map((cat) => (
 
+        <button
+          key={cat._id}
+          onClick={() => setSelectedCategory(cat.name)}
+          className={`px-4 py-2 rounded ${
+            selectedCategory === cat.name
+              ? "bg-purple-600 text-white"
+              : "bg-gray-800 text-gray-300"
+          }`}
+        >
+        {cat.name}
+        </button>
 
-      {/* TEMPLATE LIST */}
+        ))}
 
-      <section className="p-10">
+        </div>
 
-        <h2 className="text-2xl font-bold mb-6">
-          Latest Templates
-        </h2>
+      {/* TEMPLATE GRID */}
+     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
 
-        <div className="grid md:grid-cols-3 gap-6">
+        {filteredTemplates.map((template) => (
 
-          {templates.map((template) => (
+          <div
+            key={template._id}
+            className="bg-gray-900 rounded-xl overflow-hidden shadow-lg hover:scale-105 transition duration-300"
+          >
 
-            <div
-              key={template._id}
-              className="bg-white shadow-lg rounded-xl overflow-hidden hover:scale-105 transition"
+            <video
+              className="w-full h-48 object-cover"
+              muted
+              loop
+              playsInline
+              onMouseEnter={(e) => {
+                const video = e.currentTarget;
+                video.currentTime = 0;
+
+                const playPromise = video.play();
+
+                if (playPromise !== undefined) {
+                  playPromise.catch(() => {});
+                }
+              }}
+
+              onMouseLeave={(e) => {
+                const video = e.currentTarget;
+                video.pause();
+              }}
             >
+              <source src={template.video} type="video/mp4" />
+            </video>
 
-              <video controls className="w-full h-48 object-cover">
-                <source src={template.video} type="video/mp4" />
-              </video>
+            <div className="p-4">
 
-              <div className="p-4">
+              <h2 className="text-lg font-semibold text-white">
+                {template.title}
+              </h2>
 
-                <h3 className="text-lg font-semibold">
-                  {template.title}
-                </h3>
+              <div className="flex items-center justify-between mt-3">
 
-                <p className="text-green-600 font-bold mt-2">
+                <p className="text-green-400 font-bold">
                   ₹{template.price}
                 </p>
 
                 <Link
                   href={`/template/${template._id}`}
-                  className="inline-block mt-3 bg-blue-600 text-white px-3 py-1 rounded"
+                  className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-1 rounded"
                 >
                   Preview
                 </Link>
@@ -80,11 +122,11 @@ export default function Home() {
 
             </div>
 
-          ))}
+          </div>
 
-        </div>
+        ))}
 
-      </section>
+      </div>
 
     </main>
   );
