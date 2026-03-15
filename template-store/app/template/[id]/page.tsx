@@ -7,6 +7,7 @@ export default function TemplatePage({ params }: { params: Promise<{ id: string 
   const { id } = use(params);
 
   const [template, setTemplate] = useState<any>(null);
+  const [paid, setPaid] = useState(false);
 
   useEffect(() => {
 
@@ -47,8 +48,22 @@ export default function TemplatePage({ params }: { params: Promise<{ id: string 
       description: template.title,
       order_id: order.id,
 
-      handler: function () {
-        alert("Payment Successful!");
+      handler: async function (response: any) {
+
+        await fetch("/api/orders", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            templateId: template._id,
+            paymentId: response.razorpay_payment_id
+          })
+        });
+
+        setPaid(true);
+
+      alert("Payment Successful!");
       }
     };
 
@@ -75,13 +90,26 @@ export default function TemplatePage({ params }: { params: Promise<{ id: string 
         ₹{template.price}
       </p>
 
-      <button
-        onClick={buyTemplate}
-        className="bg-green-600 text-white px-6 py-3 rounded-lg"
-      >
-        Buy Template
-      </button>
+      {paid ? (
 
+        <a
+          href={template.video}
+          download
+          className="bg-blue-600 text-white px-6 py-3 rounded-lg"
+        >
+          Download Template
+        </a>
+
+      ) : (
+
+        <button
+          onClick={buyTemplate}
+          className="bg-green-600 text-white px-6 py-3 rounded-lg"
+        >
+          Buy Template
+        </button>
+
+      )}
     </main>
   );
 }

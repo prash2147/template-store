@@ -2,14 +2,23 @@ import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import Template from "@/models/Template";
 
-export async function GET() {
+export async function GET(req: Request) {
 
   await connectDB();
 
-  const templates = await Template.find();
+  const { searchParams } = new URL(req.url);
+
+  const category = searchParams.get("category");
+
+  let templates;
+
+  if (category) {
+    templates = await Template.find({ category });
+  } else {
+    templates = await Template.find();
+  }
 
   return NextResponse.json(templates);
-
 }
 
 export async function POST(req: Request) {

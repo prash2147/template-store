@@ -29,8 +29,8 @@ export default function TemplatesPage() {
   return (
     <main className="p-10">
 
-      <h1 className="text-3xl font-bold mb-6">
-        Templates
+      <h1 className="text-4xl font-bold text-white mb-8">
+        Trending VN Templates
       </h1>
 
       {/* CATEGORY FILTER */}
@@ -38,19 +38,29 @@ export default function TemplatesPage() {
 
         <button
           onClick={() => setSelectedCategory("All")}
-          className="px-4 py-2 bg-black text-white rounded"
+          className={`px-4 py-2 rounded ${
+            selectedCategory === "All"
+              ? "bg-purple-600 text-white"
+              : "bg-gray-800 text-gray-300"
+          }`}
         >
-          All
+        All
         </button>
 
         {categories.map((cat) => (
-          <button
-            key={cat._id}
-            onClick={() => setSelectedCategory(cat.name)}
-            className="px-4 py-2 bg-gray-200 rounded"
-          >
-            {cat.name}
-          </button>
+
+        <button
+          key={cat._id}
+          onClick={() => setSelectedCategory(cat.name)}
+          className={`px-4 py-2 rounded ${
+            selectedCategory === cat.name
+              ? "bg-purple-600 text-white"
+              : "bg-gray-800 text-gray-300"
+          }`}
+        >
+        {cat.name}
+        </button>
+
         ))}
 
       </div>
