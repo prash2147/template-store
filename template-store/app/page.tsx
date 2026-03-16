@@ -8,6 +8,7 @@ export default function TemplatesPage() {
   const [templates, setTemplates] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
 
@@ -21,10 +22,13 @@ export default function TemplatesPage() {
 
   }, []);
 
-  const filteredTemplates =
-    selectedCategory === "All"
-      ? templates
-      : templates.filter((t) => t.category === selectedCategory);
+  const filteredTemplates = templates
+    .filter((t) =>
+      selectedCategory === "All" ? true : t.category === selectedCategory
+    )
+    .filter((t) =>
+      t.title.toLowerCase().includes(search.toLowerCase())
+    );
 
   return (
     <main className="p-10">
@@ -32,6 +36,14 @@ export default function TemplatesPage() {
       <h1 className="text-4xl font-bold text-white mb-8">
         Trending VN Templates
       </h1>
+
+      <input
+        type="text"
+        placeholder="Search templates..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="bg-gray-900 text-white border border-gray-700 p-3 w-full max-w-md mb-6 rounded-lg"
+      />
 
       {/* CATEGORY FILTER */}
       <div className="flex gap-3 mb-8 flex-wrap items-center">
