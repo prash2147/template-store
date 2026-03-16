@@ -11,6 +11,7 @@ export default function AdminPage() {
   const [price, setPrice] = useState("");
   const [video, setVideo] = useState("");
   const [description, setDescription] = useState("");
+  const [download, setDownload] = useState("");
 
   const [categories, setCategories] = useState<any[]>([]);
   const [category, setCategory] = useState("");
@@ -49,7 +50,8 @@ export default function AdminPage() {
         price: Number(price),
         video,
         description,
-        category
+        category,
+        download
       })
     });
 
@@ -180,6 +182,13 @@ export default function AdminPage() {
         value={description}
         onChange={(e) => setDescription(e.target.value)}
       />
+      {/* DOWNLOAD LINK */}
+        <input
+          className="border p-2 w-full mb-4"
+          placeholder="Download Link (Google Drive / Cloudinary)"
+          value={download}
+          onChange={(e) => setDownload(e.target.value)}
+        />
 
       {/* UPLOAD BUTTON */}
       <button
