@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import Template from "@/models/Template";
+import { getServerSession } from "next-auth";
 
 export async function GET(req: Request) {
 
   await connectDB();
 
   const { searchParams } = new URL(req.url);
-
   const category = searchParams.get("category");
 
   let templates;
@@ -22,6 +22,12 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+
+  const session = await getServerSession();
+
+  if (!session) {
+    return new Response("Unauthorized", { status: 401 });
+  }
 
   await connectDB();
 

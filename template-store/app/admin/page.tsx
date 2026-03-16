@@ -17,6 +17,18 @@ export default function AdminPage() {
   const [category, setCategory] = useState("");
   const [newCategory, setNewCategory] = useState("");
 
+  const [orders, setOrders] = useState<any[]>([]);
+  const [revenue, setRevenue] = useState(0);
+
+  const loadOrders = async () => {
+
+  const res = await fetch("/api/orders");
+  const data = await res.json();
+
+  setOrders(data);
+
+  };
+
   // load categories
   const loadCategories = async () => {
     const res = await fetch("/api/categories");
@@ -26,6 +38,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     loadCategories();
+    loadOrders();
   }, []);
 
   // protect admin page
@@ -36,6 +49,17 @@ export default function AdminPage() {
   if (!session) {
     return <div className="p-10">Please login first</div>;
   }
+
+  //Sales states
+  <div className="bg-gray-100 p-6 rounded-lg mb-8">
+
+  <h2 className="text-xl font-bold mb-3">
+    Sales Dashboard
+  </h2>
+
+  <p>Total Orders: {orders.length}</p>
+
+  </div>
 
   // upload template
   const uploadTemplate = async () => {

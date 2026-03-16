@@ -5,7 +5,10 @@ const TemplateSchema = new mongoose.Schema({
   price: Number,
   video: String,
   description: String,
-  category: String
+  category: String,
+
+  download: String
+
 });
 
 export default mongoose.models.Template ||

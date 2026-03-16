@@ -93,7 +93,7 @@ export default function TemplatePage({ params }: { params: Promise<{ id: string 
       {paid ? (
 
         <a
-          href={template.video}
+          href={template.download}
           download
           className="bg-blue-600 text-white px-6 py-3 rounded-lg"
         >
