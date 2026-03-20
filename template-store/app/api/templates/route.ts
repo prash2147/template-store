@@ -23,11 +23,11 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
 
-  const session = await getServerSession();
+  // const session = await getServerSession();
 
-  if (!session) {
-    return new Response("Unauthorized", { status: 401 });
-  }
+  // if (!session) {
+  //   return new Response("Unauthorized", { status: 401 });
+  // }
 
   await connectDB();
 
@@ -37,4 +37,14 @@ export async function POST(req: Request) {
 
   return NextResponse.json(template);
 
+}
+export async function DELETE(req: Request) {
+
+  await connectDB();
+
+  const { id } = await req.json();
+
+  await Template.findByIdAndDelete(id);
+
+  return NextResponse.json({ success: true });
 }

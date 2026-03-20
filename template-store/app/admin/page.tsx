@@ -11,35 +11,36 @@ export default function AdminPage() {
   const [price, setPrice] = useState("");
   const [video, setVideo] = useState("");
   const [description, setDescription] = useState("");
-  const [download, setDownload] = useState("");
+  const [downloadLink, setDownloadLink] = useState("");
 
   const [categories, setCategories] = useState<any[]>([]);
   const [category, setCategory] = useState("");
   const [newCategory, setNewCategory] = useState("");
 
   const [orders, setOrders] = useState<any[]>([]);
-  const [revenue, setRevenue] = useState(0);
+  const totalRevenue = orders.reduce(
+    (sum, o) => sum + (o.amount || 0),
+    0
+  );
+    const [uploading, setUploading] = useState(false);
 
-  const loadOrders = async () => {
+  // load data
+  useEffect(() => {
+    loadCategories();
+    loadOrders();
+  }, []);
 
-  const res = await fetch("/api/orders");
-  const data = await res.json();
-
-  setOrders(data);
-
-  };
-
-  // load categories
   const loadCategories = async () => {
     const res = await fetch("/api/categories");
     const data = await res.json();
     setCategories(data);
   };
 
-  useEffect(() => {
-    loadCategories();
-    loadOrders();
-  }, []);
+  const loadOrders = async () => {
+    const res = await fetch("/api/orders");
+    const data = await res.json();
+    setOrders(data);
+  };
 
   // protect admin page
   if (status === "loading") {
@@ -50,19 +51,29 @@ export default function AdminPage() {
     return <div className="p-10">Please login first</div>;
   }
 
-  //Sales states
-  <div className="bg-gray-100 p-6 rounded-lg mb-8">
-
-  <h2 className="text-xl font-bold mb-3">
-    Sales Dashboard
-  </h2>
-
-  <p>Total Orders: {orders.length}</p>
-
-  </div>
-
   // upload template
   const uploadTemplate = async () => {
+
+    // ✅ NEW: prevent early click
+    if (uploading) {
+      alert("Please wait, video is uploading...");
+      return;
+    }
+
+    if (!video) {
+      alert("Please upload video first!");
+      return;
+    }
+
+    if (!downloadLink) {
+      alert("Please add download link!");
+      return;
+    }
+
+    if (!category) {
+      alert("Please select category!");
+      return;
+    }
 
     const res = await fetch("/api/templates", {
       method: "POST",
@@ -75,7 +86,7 @@ export default function AdminPage() {
         video,
         description,
         category,
-        download
+        downloadLink
       })
     });
 
@@ -83,14 +94,16 @@ export default function AdminPage() {
 
     alert("Template Uploaded!");
 
+    // reset
     setTitle("");
     setPrice("");
     setVideo("");
     setDescription("");
     setCategory("");
+    setDownloadLink("");
   };
 
-  // create new category
+  // create category
   const createCategory = async () => {
 
     if (!newCategory) return;
@@ -114,6 +127,13 @@ export default function AdminPage() {
         Upload Template
       </h1>
 
+      {/* SALES DASHBOARD */}
+      <div className="bg-gray-800 p-4 rounded-lg mb-6 text-white">
+        <h2 className="text-lg font-bold">Sales Dashboard</h2>
+        <p>Total Orders: {orders.length}</p>
+        <p>Total Revenue: ₹{totalRevenue}</p>
+      </div>
+
       {/* TITLE */}
       <input
         className="border p-2 w-full mb-4"
@@ -130,13 +150,12 @@ export default function AdminPage() {
         onChange={(e) => setPrice(e.target.value)}
       />
 
-      {/* CATEGORY DROPDOWN */}
+      {/* CATEGORY */}
       <select
         className="border p-2 w-full mb-4"
         value={category}
         onChange={(e) => setCategory(e.target.value)}
       >
-
         <option value="">Select Category</option>
 
         {categories.map((c) => (
@@ -144,7 +163,6 @@ export default function AdminPage() {
             {c.name}
           </option>
         ))}
-
       </select>
 
       {/* ADD CATEGORY */}
@@ -166,37 +184,49 @@ export default function AdminPage() {
 
       </div>
 
-      {/* VIDEO FILE UPLOAD */}
+      {/* VIDEO UPLOAD */}
       <input
         type="file"
         className="mb-4"
         onChange={async (e: any) => {
+          try {
+            const file = e.target.files[0];
+            if (!file) return;
 
-          const file = e.target.files[0];
+            setUploading(true);
 
-          const reader = new FileReader();
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("upload_preset", "vn_templates");
 
-          reader.onloadend = async () => {
-
-            const res = await fetch("/api/upload", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json"
-              },
-              body: JSON.stringify({
-                video: reader.result
-              })
-            });
+            const res = await fetch(
+              "https://api.cloudinary.com/v1_1/dnimbwwsh/video/upload",
+              {
+                method: "POST",
+                body: formData
+              }
+            );
 
             const data = await res.json();
 
-            setVideo(data.url);
+            if (!res.ok) {
+              alert("Upload failed: " + data.error?.message);
+              return;
+            }
 
-          };
+            setVideo(data.secure_url);
 
-          reader.readAsDataURL(file);
+            alert("Video uploaded!");
 
+          } catch (err) {
+            console.error(err);
+            alert("Upload error");
+          }
+
+          // ✅ MOVE THIS OUTSIDE finally
+          setUploading(false);
         }}
+
       />
 
       {/* DESCRIPTION */}
@@ -206,20 +236,22 @@ export default function AdminPage() {
         value={description}
         onChange={(e) => setDescription(e.target.value)}
       />
-      {/* DOWNLOAD LINK */}
-        <input
-          className="border p-2 w-full mb-4"
-          placeholder="Download Link (Google Drive / Cloudinary)"
-          value={download}
-          onChange={(e) => setDownload(e.target.value)}
-        />
 
-      {/* UPLOAD BUTTON */}
+      {/* DOWNLOAD LINK */}
+      <input
+        className="border p-2 w-full mb-4"
+        placeholder="Download Link"
+        value={downloadLink}
+        onChange={(e) => setDownloadLink(e.target.value)}
+      />
+
+      {/* BUTTON */}
       <button
         onClick={uploadTemplate}
-        className="bg-green-600 text-white px-6 py-2 rounded"
+        disabled={uploading || !video || !downloadLink || !category}
+        className="bg-green-600 text-white px-6 py-2 rounded disabled:bg-gray-400"
       >
-        Upload Template
+        {uploading ? "Uploading..." : "Upload Template"}
       </button>
 
     </main>

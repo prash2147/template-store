@@ -87,29 +87,23 @@ export default function TemplatesPage() {
             className="bg-gray-900 rounded-xl overflow-hidden shadow-lg hover:scale-105 transition duration-300"
           >
 
-            <video
-              className="w-full h-48 object-cover"
-              muted
-              loop
-              playsInline
-              onMouseEnter={(e) => {
-                const video = e.currentTarget;
-                video.currentTime = 0;
+            {template.video ? (
+              <video
+                className="w-full h-48 object-cover"
+                muted
+                loop
+                playsInline
+                onMouseEnter={(e) => e.currentTarget.play().catch(() => {})}
+                onMouseLeave={(e) => e.currentTarget.pause()}
+              >
+                <source src={template.video} type="video/mp4" />
+              </video>
+            ) : (
+              <div className="w-full h-48 bg-gray-700 flex items-center justify-center text-white">
+                No Preview
+              </div>
+            )}
 
-                const playPromise = video.play();
-
-                if (playPromise !== undefined) {
-                  playPromise.catch(() => {});
-                }
-              }}
-
-              onMouseLeave={(e) => {
-                const video = e.currentTarget;
-                video.pause();
-              }}
-            >
-              <source src={template.video} type="video/mp4" />
-            </video>
 
             <div className="p-4">
 
