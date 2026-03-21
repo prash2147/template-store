@@ -9,7 +9,7 @@ export default function TemplatePage({ params }: { params: Promise<{ id: string 
   const [template, setTemplate] = useState<any>(null);
   const [paid, setPaid] = useState(false);
 
-  // ✅ load template
+  // load template
   useEffect(() => {
     fetch("/api/templates")
       .then(res => res.json())
@@ -23,7 +23,7 @@ export default function TemplatePage({ params }: { params: Promise<{ id: string 
     return <div className="p-10">Loading...</div>;
   }
 
-  // ✅ BUY FUNCTION
+  //  BUY FUNCTION
   const buyTemplate = async () => {
 
     const res = await fetch("/api/create-order", {
@@ -48,7 +48,7 @@ export default function TemplatePage({ params }: { params: Promise<{ id: string 
 
       handler: async function (response: any) {
 
-        // ✅ VERIFY PAYMENT
+        //  VERIFY PAYMENT
         const verify = await fetch("/api/verify-payment", {
           method: "POST",
           headers: {
@@ -67,7 +67,7 @@ export default function TemplatePage({ params }: { params: Promise<{ id: string 
 
           setPaid(true);
 
-          // ✅ SAVE ORDER
+          // SAVE ORDER
           await fetch("/api/orders", {
             method: "POST",
             headers: {
@@ -101,7 +101,12 @@ export default function TemplatePage({ params }: { params: Promise<{ id: string 
 
       {/* VIDEO */}
       {template.video ? (
-        <video controls className="w-full rounded-lg mb-6">
+        <video 
+          controls
+          controlsList="nodownload"
+          disablePictureInPicture
+         className="w-full rounded-lg mb-6"
+         >
           <source src={template.video} type="video/mp4" />
         </video>
       ) : (

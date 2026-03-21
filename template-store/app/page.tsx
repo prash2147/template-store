@@ -93,6 +93,9 @@ export default function TemplatesPage() {
                 muted
                 loop
                 playsInline
+                controls
+                controlsList="nodownload"
+                disablePictureInPicture
                 onMouseEnter={(e) => e.currentTarget.play().catch(() => {})}
                 onMouseLeave={(e) => e.currentTarget.pause()}
               >
